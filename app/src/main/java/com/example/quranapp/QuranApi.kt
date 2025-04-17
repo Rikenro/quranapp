@@ -22,6 +22,15 @@ interface QuranApi {
     @GET("juz/{juzNumber}/id.indonesian")
     suspend fun getJuzIndonesian(@Path("juzNumber") juzNumber: Int): Response<JuzDetailResponse>
 
+    @GET("quran/ar.alafasy")
+    suspend fun getQuranAudio(): Response<QuranAudioResponse>
+
+    @GET("surah/{surahNumber}/ar.alafasy")
+    suspend fun getSurahAudio(@Path("surahNumber") surahNumber: Int): Response<SurahAudioResponse>
+
+    @GET("ayah/{ayahNumber}/ar.alafasy")
+    suspend fun getAyahAudio(@Path("ayahNumber") ayahNumber: Int): Response<AyahAudioResponse>
+
     companion object {
         val instance: QuranApi by lazy {
             Retrofit.Builder()

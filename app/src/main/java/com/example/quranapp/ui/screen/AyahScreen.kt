@@ -1,6 +1,8 @@
 package com.example.quranapp.ui
 
 import android.app.Activity
+import android.media.MediaPlayer
+import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,24 +14,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.quranapp.Ayah
+import com.example.quranapp.*
 import com.example.quranapp.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun AyahScreen(
     ayahs: List<Ayah> = emptyList(),
     groupedAyahs: List<Pair<String?, List<Ayah>>> = emptyList(),
     surahInfo: Triple<String, String, String>?,
+    surahNumber: Int? = null,
+    juzNumber: Int? = null,
     bismillahText: String? = null,
     targetAyahNumber: Int? = null,
     onAyahClick: (Ayah) -> Unit,
@@ -37,13 +42,26 @@ fun AyahScreen(
 ) {
     val listState = rememberLazyListState()
     val activity = LocalActivity.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val quranApi = QuranApi.instance
+
+    // State untuk data audio, menggunakan Map untuk menyimpan audio berdasarkan nomor ayat global
+    val audioAyahsMap = remember { mutableStateMapOf<Int, AudioAyahDetail>() }
+
+    // State untuk MediaPlayer
+    val mediaPlayerState = remember { mutableStateOf<MediaPlayer?>(null) }
+    val currentPlayingAyah = remember { mutableStateOf<Int?>(null) }
+
+    // Tentukan apakah kita menampilkan Surah atau Juz
+    val isSurah = ayahs.isNotEmpty()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 modifier = Modifier.height(80.dp),
-                backgroundColor = Color(0xFF2A4F4D), // Warna hijau tua (#2A4F4D)
-                contentColor = Color.Black, // Teks hitam
+                backgroundColor = Color(0xFF2A4F4D),
+                contentColor = Color.Black,
                 elevation = 4.dp
             ) {
                 Row(
@@ -52,47 +70,42 @@ fun AyahScreen(
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Tombol Back
                     IconButton(
                         onClick = { activity?.finish() }
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White // Ikon hitam
+                            tint = Color.White
                         )
                     }
-
-                    // Teks "Al Quran" sebagai judul
                     Text(
                         text = "Al Quran",
-                        color = Color.White, // Teks hitam
+                        color = Color.White,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 8.dp)
                     )
-
-                    // Informasi Surah di sebelah kanan
                     surahInfo?.let { (revelationType, translationName, ayahCount) ->
                         Column(
                             horizontalAlignment = Alignment.End
                         ) {
                             Text(
                                 text = translationName,
-                                color = Color.White, // Teks hitam
+                                color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = ayahCount,
-                                color = Color.White, // Teks hitam
+                                color = Color.White,
                                 fontSize = 14.sp
                             )
                             Text(
                                 text = revelationType,
-                                color = Color.White, // Teks sekunder abu-abu
+                                color = Color.White,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -105,15 +118,14 @@ fun AyahScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White) // Latar belakang putih
+                .background(Color.White)
                 .padding(paddingValues)
         ) {
-            // Tampilkan Bismillah di bawah AppBar untuk SurahDetailActivity
             bismillahText?.let {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = it,
-                    color = Color.Black, // Teks hitam
+                    color = Color.Black,
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -123,25 +135,92 @@ fun AyahScreen(
             }
 
             LazyColumn(state = listState) {
-                // Untuk SurahDetailActivity
                 if (ayahs.isNotEmpty()) {
                     items(ayahs) { ayah ->
+                        // Ambil audio untuk ayat ini jika belum ada di map
+                        LaunchedEffect(ayah.number) {
+                            if (ayah.number !in audioAyahsMap) {
+                                try {
+                                    Log.d("AyahScreen", "Mengambil audio untuk ayat ${ayah.number}")
+                                    val audioResponse = quranApi.getAyahAudio(ayah.number)
+                                    if (audioResponse.isSuccessful) {
+                                        audioResponse.body()?.data?.let { audioAyah ->
+                                            audioAyahsMap[ayah.number] = audioAyah
+                                            Log.d("AyahScreen", "Audio untuk ayat ${ayah.number}: ${audioAyah.audio}")
+                                        }
+                                    } else {
+                                        Log.e("AyahScreen", "Gagal mengambil audio ayat ${ayah.number}: ${audioResponse.code()} - ${audioResponse.message()}")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("AyahScreen", "Error saat mengambil audio ayat ${ayah.number}: ${e.message}", e)
+                                }
+                            }
+                        }
+
+                        val audioAyah = audioAyahsMap[ayah.number]
                         AyahItem(
                             ayah = ayah,
+                            audioUrl = audioAyah?.audio,
+                            isPlaying = currentPlayingAyah.value == ayah.number,
                             onClick = { onAyahClick(ayah) },
-                            onBookmarkClick = { onBookmarkClick(ayah) }
+                            onBookmarkClick = { onBookmarkClick(ayah) },
+                            onPlayClick = { url ->
+                                if (url != null) {
+                                    Log.d("AyahScreen", "Memutar audio untuk ayat ${ayah.number}: $url")
+                                    try {
+                                        if (currentPlayingAyah.value == ayah.number) {
+                                            Log.d("AyahScreen", "Pause audio untuk ayat ${ayah.number}")
+                                            mediaPlayerState.value?.pause()
+                                            currentPlayingAyah.value = null
+                                        } else {
+                                            mediaPlayerState.value?.stop()
+                                            mediaPlayerState.value?.release()
+
+                                            val mediaPlayer = MediaPlayer().apply {
+                                                setDataSource(url)
+                                                setOnPreparedListener {
+                                                    Log.d("AyahScreen", "MediaPlayer siap, mulai memutar")
+                                                    start()
+                                                }
+                                                setOnErrorListener { mp, what, extra ->
+                                                    Log.e("AyahScreen", "MediaPlayer error: what=$what, extra=$extra")
+                                                    true
+                                                }
+                                                setOnCompletionListener {
+                                                    Log.d("AyahScreen", "Pemutaran selesai untuk ayat ${ayah.number}")
+                                                    currentPlayingAyah.value = null
+                                                    release()
+                                                    mediaPlayerState.value = null
+                                                }
+                                                prepareAsync()
+                                            }
+                                            mediaPlayerState.value = mediaPlayer
+                                            currentPlayingAyah.value = ayah.number
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("AyahScreen", "Error saat memutar audio: ${e.message}", e)
+                                    }
+                                } else {
+                                    Log.w("AyahScreen", "URL audio tidak tersedia untuk ayat ${ayah.number} (numberInSurah: ${ayah.numberInSurah})")
+                                }
+                            },
+                            onStopClick = {
+                                Log.d("AyahScreen", "Menghentikan audio untuk ayat ${ayah.number}")
+                                mediaPlayerState.value?.stop()
+                                mediaPlayerState.value?.release()
+                                mediaPlayerState.value = null
+                                currentPlayingAyah.value = null
+                            }
                         )
                     }
                 }
 
-                // Untuk JuzDetailActivity
                 groupedAyahs.forEach { (bismillah, ayahList) ->
-                    // Tampilkan Bismillah sebagai header jika ada
                     bismillah?.let {
                         item {
                             Text(
                                 text = it,
-                                color = Color.Black, // Teks hitam
+                                color = Color.Black,
                                 fontSize = 18.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
@@ -151,16 +230,85 @@ fun AyahScreen(
                         }
                     }
                     items(ayahList) { ayah ->
+                        // Ambil audio untuk ayat ini jika belum ada di map
+                        LaunchedEffect(ayah.number) {
+                            if (ayah.number !in audioAyahsMap) {
+                                try {
+                                    Log.d("AyahScreen", "Mengambil audio untuk ayat ${ayah.number}")
+                                    val audioResponse = quranApi.getAyahAudio(ayah.number)
+                                    if (audioResponse.isSuccessful) {
+                                        audioResponse.body()?.data?.let { audioAyah ->
+                                            audioAyahsMap[ayah.number] = audioAyah
+                                            Log.d("AyahScreen", "Audio untuk ayat ${ayah.number}: ${audioAyah.audio}")
+                                        }
+                                    } else {
+                                        Log.e("AyahScreen", "Gagal mengambil audio ayat ${ayah.number}: ${audioResponse.code()} - ${audioResponse.message()}")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("AyahScreen", "Error saat mengambil audio ayat ${ayah.number}: ${e.message}", e)
+                                }
+                            }
+                        }
+
+                        val audioAyah = audioAyahsMap[ayah.number]
                         AyahItem(
                             ayah = ayah,
+                            audioUrl = audioAyah?.audio,
+                            isPlaying = currentPlayingAyah.value == ayah.number,
                             onClick = { onAyahClick(ayah) },
-                            onBookmarkClick = { onBookmarkClick(ayah) }
+                            onBookmarkClick = { onBookmarkClick(ayah) },
+                            onPlayClick = { url ->
+                                if (url != null) {
+                                    Log.d("AyahScreen", "Memutar audio untuk ayat ${ayah.number}: $url")
+                                    try {
+                                        if (currentPlayingAyah.value == ayah.number) {
+                                            Log.d("AyahScreen", "Pause audio untuk ayat ${ayah.number}")
+                                            mediaPlayerState.value?.pause()
+                                            currentPlayingAyah.value = null
+                                        } else {
+                                            mediaPlayerState.value?.stop()
+                                            mediaPlayerState.value?.release()
+
+                                            val mediaPlayer = MediaPlayer().apply {
+                                                setDataSource(url)
+                                                setOnPreparedListener {
+                                                    Log.d("AyahScreen", "MediaPlayer siap, mulai memutar")
+                                                    start()
+                                                }
+                                                setOnErrorListener { mp, what, extra ->
+                                                    Log.e("AyahScreen", "MediaPlayer error: what=$what, extra=$extra")
+                                                    true
+                                                }
+                                                setOnCompletionListener {
+                                                    Log.d("AyahScreen", "Pemutaran selesai untuk ayat ${ayah.number}")
+                                                    currentPlayingAyah.value = null
+                                                    release()
+                                                    mediaPlayerState.value = null
+                                                }
+                                                prepareAsync()
+                                            }
+                                            mediaPlayerState.value = mediaPlayer
+                                            currentPlayingAyah.value = ayah.number
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("AyahScreen", "Error saat memutar audio: ${e.message}", e)
+                                    }
+                                } else {
+                                    Log.w("AyahScreen", "URL audio tidak tersedia untuk ayat ${ayah.number} (numberInSurah: ${ayah.numberInSurah})")
+                                }
+                            },
+                            onStopClick = {
+                                Log.d("AyahScreen", "Menghentikan audio untuk ayat ${ayah.number}")
+                                mediaPlayerState.value?.stop()
+                                mediaPlayerState.value?.release()
+                                mediaPlayerState.value = null
+                                currentPlayingAyah.value = null
+                            }
                         )
                     }
                 }
             }
 
-            // Scroll otomatis ke ayat yang di-bookmark
             LaunchedEffect(targetAyahNumber, ayahs) {
                 targetAyahNumber?.let { target ->
                     val index = ayahs.indexOfFirst { it.number == target }
@@ -171,47 +319,75 @@ fun AyahScreen(
             }
         }
     }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d("AyahScreen", "Membersihkan MediaPlayer saat Composable dihancurkan")
+            mediaPlayerState.value?.stop()
+            mediaPlayerState.value?.release()
+            mediaPlayerState.value = null
+            currentPlayingAyah.value = null
+        }
+    }
 }
 
 @Composable
 fun AyahItem(
     ayah: Ayah,
+    audioUrl: String?,
+    isPlaying: Boolean,
     onClick: () -> Unit,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    onPlayClick: (String?) -> Unit,
+    onStopClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        backgroundColor = Color(0xFFF5F5F5), // Latar belakang card abu-abu sangat terang
+        backgroundColor = Color(0xFFF5F5F5),
         elevation = 4.dp
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .padding(16.dp)
-                .clickable { onClick() },
-            verticalAlignment = Alignment.CenterVertically
+                .clickable { onClick() }
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "${ayah.numberInSurah}. ${ayah.text}",
-                    color = Color.Black, // Teks hitam
+                    color = Color.Black,
                     fontSize = 18.sp,
                     textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = ayah.translation?.text ?: "Terjemahan tidak tersedia",
-                    color = Color.Gray, // Teks sekunder abu-abu
-                    fontSize = 14.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row {
+                    IconButton(onClick = { onPlayClick(audioUrl) }) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                            ),
+                            contentDescription = if (isPlaying) "Pause Audio" else "Play Audio",
+                            tint = Color.Black
+                        )
+                    }
+
+                }
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = ayah.translation?.text ?: "Terjemahan tidak tersedia",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

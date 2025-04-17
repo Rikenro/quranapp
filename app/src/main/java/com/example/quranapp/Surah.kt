@@ -69,3 +69,39 @@ data class AyahDetail(
     val numberInSurah: Int,
     val text: String,
 )
+data class QuranAudioResponse(
+    val data: AudioData
+)
+data class SurahAudioResponse(
+    val data: AudioSurah
+)
+data class AudioData(
+    val surahs: List<AudioSurah>
+)
+data class AyahAudioResponse(
+    val data: AudioAyahDetail
+)
+data class AudioAyahDetail(
+    val number: Int, // Nomor ayat global (1-6236)
+    val numberInSurah: Int, // Nomor ayat dalam Surah
+    val audio: String, // URL utama untuk audio ayat
+    val audioSecondary: List<String>?, // URL alternatif untuk audio ayat
+    val surah: AudioSurahInfo // Informasi Surah
+)
+
+data class AudioSurahInfo(
+    val number: Int, // Nomor Surah
+    val name: String // Nama Surah dalam teks Arab
+)
+data class AudioSurah(
+    val number: Int, // Nomor Surah
+    val name: String, // Nama Surah dalam teks Arab
+    val ayahs: List<AudioAyah>
+)
+
+data class AudioAyah(
+    val number: Int, // Nomor ayat global (1-6236)
+    val numberInSurah: Int, // Nomor ayat dalam Surah
+    val audio: String, // URL utama untuk audio ayat
+    val audioSecondary: List<String>? // URL alternatif untuk audio ayat
+)
