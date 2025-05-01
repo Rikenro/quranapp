@@ -1,4 +1,4 @@
-package com.example.quranapp
+package com.rikenro.quranapp
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.Fragment
-import com.example.quranapp.ui.SurahScreen
+import com.rikenro.quranapp.ui.SurahScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

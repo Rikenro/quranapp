@@ -1,4 +1,4 @@
-package com.example.quranapp
+package com.rikenro.quranapp
 
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable

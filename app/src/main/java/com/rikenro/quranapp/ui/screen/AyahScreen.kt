@@ -1,4 +1,4 @@
-package com.example.quranapp.ui
+package com.rikenro.quranapp.ui
 
 import android.app.Activity
 import android.media.MediaPlayer
@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.quranapp.*
-import com.example.quranapp.R
+import com.rikenro.quranapp.*
+import com.rikenro.quranapp.R
 import kotlinx.coroutines.launch
 
 @Composable

@@ -1,4 +1,4 @@
-package com.example.quranapp
+package com.rikenro.quranapp
 
 import org.junit.Test
 

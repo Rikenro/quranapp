@@ -1,4 +1,4 @@
-package com.example.quranapp.ui.theme
+package com.rikenro.quranapp.ui.theme
 
 import android.app.Activity
 import android.os.Build

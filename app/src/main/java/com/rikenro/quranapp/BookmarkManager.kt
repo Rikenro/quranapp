@@ -1,4 +1,4 @@
-package com.example.quranapp
+package com.rikenro.quranapp
 
 import android.content.Context
 import android.content.SharedPreferences

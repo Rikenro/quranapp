@@ -1,58 +1,55 @@
-package com.example.quranapp.ui
+package com.rikenro.quranapp.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.Card
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.quranapp.Bookmark
+import com.rikenro.quranapp.Juz
 
 @Composable
-fun BookmarkScreen(
-    bookmarks: List<Bookmark>,
-    onBookmarkClick: (Bookmark) -> Unit,
-    onDeleteClick: (Bookmark) -> Unit
+fun JuzScreen(
+    juzList: List<Juz>,
+    onJuzClick: (Juz) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White) // Latar belakang putih
-            .padding(16.dp)
     ) {
-        items(bookmarks) { bookmark ->
-            BookmarkItem(
-                bookmark = bookmark,
-                onClick = { onBookmarkClick(bookmark) },
-                onDeleteClick = { onDeleteClick(bookmark) }
+        items(juzList) { juz ->
+            JuzItem(
+                juz = juz,
+                onClick = { onJuzClick(juz) }
             )
         }
     }
 }
 
 @Composable
-fun BookmarkItem(
-    bookmark: Bookmark,
-    onClick: () -> Unit,
-    onDeleteClick: () -> Unit
+fun JuzItem(
+    juz: Juz,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        backgroundColor = Color(0xFFF5F5F5), // Latar belakang card abu-abu sangat terang
+        backgroundColor = Color(0xFFF5F5F5),
         elevation = 4.dp
     ) {
         Row(
@@ -60,28 +57,35 @@ fun BookmarkItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .weight(1f)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.Gray),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Surah ${bookmark.surahName} - Ayat ${bookmark.ayahNumber}",
-                    color = Color.Black,
+                    text = juz.number.toString(),
+                    color = Color.White,
                     fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = "JUZ ${juz.number}",
+                    color = Color.Black,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = bookmark.ayahText,
-                    color = Color.Black,
+                    text = "MULAI DI: ${juz.startingSurah.uppercase()} AYAT ${juz.startingAyah}",
+                    color = Color.Gray,
                     fontSize = 14.sp
-                )
-            }
-            IconButton(onClick = onDeleteClick) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Bookmark",
-                    tint = Color.Red // Ikon hitam
                 )
             }
         }

@@ -20,6 +20,7 @@
 
         <activity android:name=".SurahDetailActivity" />
         <activity android:name=".JuzDetailActivity" />
+        <activity android:name=".LoginActivity" />
     </application>
 
 </manifest>

@@ -2,14 +2,15 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.quranapp"
+    namespace = "com.rikenro.quranapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.quranapp"
+        applicationId = "com.rikenro.quranapp"
         minSdk = 30
         targetSdk = 35
         versionCode = 1
@@ -61,6 +62,16 @@ dependencies {
     implementation ("androidx.fragment:fragment-ktx:1.8.3")
     implementation ("androidx.navigation:navigation-compose:2.7.7")
     implementation ("androidx.work:work-runtime-ktx:2.9.0")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation ("com.google.firebase:firebase-auth-ktx")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

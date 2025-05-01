@@ -2,4 +2,5 @@
     <string name="app_name">QuranApp</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="default_web_client_id">172108290499-eobb330hk5ard90tra2sqododtqf72hq.apps.googleusercontent.com</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.quranapp.ui
+package com.rikenro.quranapp.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,30 +17,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.quranapp.Juz
+import com.rikenro.quranapp.Surah
 
 @Composable
-fun JuzScreen(
-    juzList: List<Juz>,
-    onJuzClick: (Juz) -> Unit
+fun SurahScreen(
+    surahList: List<Surah>,
+    onSurahClick: (Surah) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Latar belakang putih
+            .background(Color.White)
     ) {
-        items(juzList) { juz ->
-            JuzItem(
-                juz = juz,
-                onClick = { onJuzClick(juz) }
+        items(surahList) { surah ->
+            SurahItem(
+                surah = surah,
+                onClick = { onSurahClick(surah) }
             )
         }
     }
 }
 
 @Composable
-fun JuzItem(
-    juz: Juz,
+fun SurahItem(
+    surah: Surah,
     onClick: () -> Unit
 ) {
     Card(
@@ -49,7 +49,7 @@ fun JuzItem(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        backgroundColor = Color(0xFFF5F5F5),
+        backgroundColor = Color(0xFFF5F5F5), // Latar belakang card abu-abu sangat terang
         elevation = 4.dp
     ) {
         Row(
@@ -65,7 +65,7 @@ fun JuzItem(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = juz.number.toString(),
+                    text = surah.number.toString(),
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -76,14 +76,14 @@ fun JuzItem(
 
             Column {
                 Text(
-                    text = "JUZ ${juz.number}",
+                    text = surah.indonesianName.uppercase(),
                     color = Color.Black,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "MULAI DI: ${juz.startingSurah.uppercase()} AYAT ${juz.startingAyah}",
+                    text = "${surah.revelationType.uppercase()} | ${surah.numberOfAyahs} AYAT",
                     color = Color.Gray,
                     fontSize = 14.sp
                 )

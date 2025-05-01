@@ -1,4 +1,4 @@
-package com.example.quranapp
+package com.rikenro.quranapp
 
 import retrofit2.Response
 import retrofit2.Retrofit

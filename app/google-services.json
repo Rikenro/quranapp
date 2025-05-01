@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "172108290499",
+    "project_id": "quranapp-aa1fd",
+    "storage_bucket": "quranapp-aa1fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:172108290499:android:2a95c4e67d706ebdc44576",
+        "android_client_info": {
+          "package_name": "com.rikenro.quranapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "172108290499-9vvqe9vub09fqru57f998g1pn57hcn3c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rikenro.quranapp",
+            "certificate_hash": "db5de730f1cb5a67acc48bc5968492b3972b6297"
+          }
+        },
+        {
+          "client_id": "172108290499-eobb330hk5ard90tra2sqododtqf72hq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBunI23GV22BCF-fhkKIMaAxHgS946IQIc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "172108290499-eobb330hk5ard90tra2sqododtqf72hq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

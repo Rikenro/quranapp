@@ -1,4 +1,4 @@
-package com.example.quranapp
+package com.rikenro.quranapp
 
 import android.content.Context
 import android.content.Intent
@@ -9,7 +9,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
-import com.example.quranapp.ui.AyahScreen
+import com.rikenro.quranapp.ui.AyahScreen
 import java.io.Serializable
 
 class JuzDetailActivity : ComponentActivity() {
