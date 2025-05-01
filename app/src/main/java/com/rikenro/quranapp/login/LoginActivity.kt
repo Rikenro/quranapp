@@ -118,7 +118,7 @@ fun LoginScreen(onGoogleSignInClick: () -> Unit) {
         ) {
             // Logo aplikasi (gunakan ikon placeholder, ganti dengan logo Anda)
             Image(
-                painter = painterResource(id = R.drawable.inilogo1),
+                painter = painterResource(id = R.drawable.ic_quran_logo),
                 contentDescription = "Logo QuranApp",
                 modifier = Modifier
                     .size(120.dp)
